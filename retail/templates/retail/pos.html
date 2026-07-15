@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>POS - Ventas</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --soft: #eef3f1;
+            --line: #d9dee6;
+            --text: #1f2937;
+            --muted: #667085;
+            --primary: #1f7a5c;
+            --primary-strong: #155d46;
+            --blue: #2563eb;
+            --danger: #b42318;
+            --warning: #b45309;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .shell {
+            width: min(1400px, calc(100% - 28px));
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 68px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.2;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        a.button,
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a.button {
+            padding: 0 12px;
+        }
+
+        button {
+            padding: 0 10px;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .primary {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .primary:hover {
+            background: var(--primary-strong);
+        }
+
+        .danger {
+            border-color: #f5c7c1;
+            background: #fff5f3;
+            color: var(--danger);
+        }
+
+        main {
+            padding: 18px 0 32px;
+        }
+
+        .pos-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(420px, 0.9fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            overflow: hidden;
+        }
+
+        .panel-header,
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .panel-header {
+            min-height: 58px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.25;
+        }
+
+        label {
+            display: block;
+            margin: 0 0 6px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            min-height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text);
+            font: inherit;
+            padding: 8px 10px;
+        }
+
+        textarea {
+            min-height: 72px;
+            resize: vertical;
+        }
+
+        .searchbar {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) 180px;
+            gap: 12px;
+            padding: 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .segment {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .segment input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        .segment span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            border-radius: 5px;
+            padding: 0 10px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .segment input:checked + span {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 10px;
+            max-height: calc(100vh - 208px);
+            overflow: auto;
+            padding: 14px;
+        }
+
+        .product {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            min-height: 112px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 12px;
+        }
+
+        .product strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            line-height: 1.25;
+        }
+
+        .product small {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .product .price {
+            margin-top: 8px;
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .product .stock {
+            color: var(--blue);
+            font-weight: 700;
+        }
+
+        .product.low .stock {
+            color: var(--warning);
+        }
+
+        .add {
+            width: 38px;
+            height: 38px;
+            align-self: start;
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .sale-form {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .cart-table th,
+        .cart-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .cart-table th {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .cart-table input {
+            min-height: 34px;
+            padding: 6px 8px;
+        }
+
+        .qty {
+            width: 76px;
+        }
+
+        .money-input {
+            width: 104px;
+        }
+
+        .cart-wrap {
+            max-height: 300px;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .empty {
+            padding: 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .totals {
+            display: grid;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcfd;
+            padding: 12px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .total-row strong {
+            font-size: 24px;
+        }
+
+        .status {
+            display: none;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.error {
+            border: 1px solid #f5c7c1;
+            background: #fff5f3;
+            color: var(--danger);
+        }
+
+        .status.success {
+            border: 1px solid #b7dfcf;
+            background: #edf7f3;
+            color: var(--primary);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .submit {
+            min-height: 46px;
+            font-size: 16px;
+        }
+
+        @media (max-width: 980px) {
+            .topbar,
+            .panel-header,
+            .toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .pos-grid,
+            .searchbar,
+            .form-grid,
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .products {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    {{ productos|json_script:"productos-data" }}
+    {{ clientes|json_script:"clientes-data" }}
+    {{ metodos_pago|json_script:"metodos-data" }}
+    {{ sesiones_caja|json_script:"sesiones-data" }}
+
+    <header>
+        <div class="shell topbar">
+            <div>
+                <h1>POS</h1>
+                <div class="muted">Usuario: {{ request.user.get_username }}</div>
+            </div>
+            <nav aria-label="Accesos">
+                <a class="button" href="{% url 'retail:dashboard' %}">Panel</a>
+                <a class="button" href="{% url 'admin:index' %}">Admin</a>
+                <a class="button" href="/admin/retail/venta/">Ventas</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="shell">
+        <div class="pos-grid">
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Productos</h2>
+                    <div class="segment" role="radiogroup" aria-label="Canal">
+                        <label>
+                            <input type="radio" name="canal" value="mostrador" checked>
+                            <span>Mostrador</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="canal" value="mayorista">
+                            <span>Mayorista</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="searchbar">
+                    <div>
+                        <label for="search">Buscar</label>
+                        <input id="search" type="search" autocomplete="off" placeholder="Codigo, SKU o nombre">
+                    </div>
+                    <div>
+                        <label for="category-filter">Categoria</label>
+                        <select id="category-filter">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="products" class="products"></div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Venta</h2>
+                    <span class="muted" id="cart-count">0 items</span>
+                </div>
+
+                <form id="sale-form" class="sale-form">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        <div>
+                            <label for="cliente">Cliente</label>
+                            <select id="cliente">
+                                <option value="">Cliente mostrador</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">{{ cliente.nombre }}{% if cliente.nit_ci %} - {{ cliente.nit_ci }}{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sesion-caja">Sesion caja</label>
+                            <select id="sesion-caja">
+                                <option value="">Sin sesion</option>
+                                {% for sesion in sesiones_caja %}
+                                    <option value="{{ sesion.id }}">{{ sesion.caja }} - {{ sesion.cajero }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="cart-wrap">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cant.</th>
+                                    <th>Desc.</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-body"></tbody>
+                        </table>
+                        <div id="cart-empty" class="empty">Carrito vacio.</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="metodo-pago">Pago</label>
+                            <select id="metodo-pago">
+                                {% for metodo in metodos_pago %}
+                                    <option value="{{ metodo.id }}">{{ metodo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="referencia">Referencia</label>
+                            <input id="referencia" type="text" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="descuento">Descuento venta</label>
+                            <input id="descuento" type="number" min="0" step="0.01" value="0.00">
+                        </div>
+                        <div>
+                            <label for="monto-recibido">Monto recibido</label>
+                            <input id="monto-recibido" type="number" min="0" step="0.01">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="notas">Notas</label>
+                        <textarea id="notas"></textarea>
+                    </div>
+
+                    <div class="totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <b id="subtotal">Bs 0.00</b>
+                        </div>
+                        <div class="total-row">
+                            <span>Descuento</span>
+                            <b id="discount-total">Bs 0.00</b>
+                        </div>
+                        <div class="total-row">
+                            <span>Cambio</span>
+                            <b id="change">Bs 0.00</b>
+                        </div>
+                        <div class="total-row">
+                            <span>Total</span>
+                            <strong id="total">Bs 0.00</strong>
+                        </div>
+                    </div>
+
+                    <div id="status" class="status" role="status"></div>
+
+                    <div class="actions">
+                        <button class="primary submit" type="submit" id="submit-sale">Cobrar venta</button>
+                        <button class="danger" type="button" id="clear-cart">Vaciar</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const productos = JSON.parse(document.getElementById('productos-data').textContent);
+        const metodosPago = JSON.parse(document.getElementById('metodos-data').textContent);
+        const cart = new Map();
+
+        const productList = document.getElementById('products');
+        const cartBody = document.getElementById('cart-body');
+        const cartEmpty = document.getElementById('cart-empty');
+        const cartCount = document.getElementById('cart-count');
+        const searchInput = document.getElementById('search');
+        const categoryFilter = document.getElementById('category-filter');
+        const clienteSelect = document.getElementById('cliente');
+        const sesionSelect = document.getElementById('sesion-caja');
+        const metodoSelect = document.getElementById('metodo-pago');
+        const referenciaInput = document.getElementById('referencia');
+        const descuentoInput = document.getElementById('descuento');
+        const montoInput = document.getElementById('monto-recibido');
+        const notasInput = document.getElementById('notas');
+        const statusBox = document.getElementById('status');
+        const submitButton = document.getElementById('submit-sale');
+
+        let currentTotal = 0;
+        let amountTouched = false;
+
+        function money(value) {
+            return `Bs ${Number(value || 0).toFixed(2)}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function getCanal() {
+            return document.querySelector('input[name="canal"]:checked').value;
+        }
+
+        function priceFor(product) {
+            return Number(getCanal() === 'mayorista' ? product.precio_mayorista : product.precio_venta);
+        }
+
+        function productById(id) {
+            return productos.find((product) => product.id === Number(id));
+        }
+
+        function initCategories() {
+            const categories = [...new Set(productos.map((product) => product.categoria))].sort();
+            categoryFilter.insertAdjacentHTML(
+                'beforeend',
+                categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join(''),
+            );
+        }
+
+        function renderProducts() {
+            const query = searchInput.value.trim().toLowerCase();
+            const category = categoryFilter.value;
+            const filtered = productos
+                .filter((product) => {
+                    const text = [
+                        product.sku,
+                        product.codigo_barra,
+                        product.nombre,
+                        product.categoria,
+                    ].join(' ').toLowerCase();
+                    return (!query || text.includes(query)) && (!category || product.categoria === category);
+                })
+                .slice(0, 80);
+
+            if (!filtered.length) {
+                productList.innerHTML = '<div class="empty">No hay productos para mostrar.</div>';
+                return;
+            }
+
+            productList.innerHTML = filtered.map((product) => {
+                const low = product.stock_actual <= 5 ? ' low' : '';
+                const disabled = product.stock_actual <= 0 ? 'disabled' : '';
+                return `
+                    <article class="product${low}">
+                        <div>
+                            <strong>${escapeHtml(product.nombre)}</strong>
+                            <small>${escapeHtml(product.sku)} | ${escapeHtml(product.categoria)}</small>
+                            <small>Stock: <span class="stock">${product.stock_actual}</span></small>
+                            <div class="price">${money(priceFor(product))}</div>
+                        </div>
+                        <button class="add" type="button" data-add="${product.id}" ${disabled}>+</button>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function addToCart(productId) {
+            const product = productById(productId);
+            if (!product || product.stock_actual <= 0) {
+                return;
+            }
+
+            const existing = cart.get(product.id) || { product, quantity: 0, discount: 0 };
+            if (existing.quantity >= product.stock_actual) {
+                setStatus(`No hay mas stock de ${product.nombre}.`, 'error');
+                return;
+            }
+            existing.quantity += 1;
+            cart.set(product.id, existing);
+            renderCart();
+        }
+
+        function renderCart() {
+            if (!cart.size) {
+                cartBody.innerHTML = '';
+                cartEmpty.style.display = 'block';
+            } else {
+                cartEmpty.style.display = 'none';
+                cartBody.innerHTML = [...cart.values()].map((item) => {
+                    const lineTotal = Math.max(0, (priceFor(item.product) * item.quantity) - item.discount);
+                    return `
+                        <tr data-product-id="${item.product.id}">
+                            <td>
+                                <strong>${escapeHtml(item.product.nombre)}</strong>
+                                <div class="muted">${escapeHtml(item.product.sku)} | ${money(priceFor(item.product))}</div>
+                            </td>
+                            <td><input class="qty" data-qty type="number" min="1" max="${item.product.stock_actual}" value="${item.quantity}"></td>
+                            <td><input class="money-input" data-discount type="number" min="0" step="0.01" value="${item.discount.toFixed(2)}"></td>
+                            <td><b>${money(lineTotal)}</b></td>
+                            <td><button class="danger" type="button" data-remove="${item.product.id}">x</button></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            const totalItems = [...cart.values()].reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = `${totalItems} item${totalItems === 1 ? '' : 's'}`;
+            renderTotals();
+        }
+
+        function cartSubtotal() {
+            return [...cart.values()].reduce((sum, item) => {
+                return sum + Math.max(0, (priceFor(item.product) * item.quantity) - item.discount);
+            }, 0);
+        }
+
+        function renderTotals() {
+            const subtotal = cartSubtotal();
+            const discount = Math.max(0, Number(descuentoInput.value || 0));
+            currentTotal = Math.max(0, subtotal - discount);
+            if (!amountTouched) {
+                montoInput.value = currentTotal.toFixed(2);
+            }
+            const received = Number(montoInput.value || 0);
+            document.getElementById('subtotal').textContent = money(subtotal);
+            document.getElementById('discount-total').textContent = money(discount);
+            document.getElementById('total').textContent = money(currentTotal);
+            document.getElementById('change').textContent = money(Math.max(0, received - currentTotal));
+        }
+
+        function setStatus(message, kind, sale) {
+            statusBox.className = `status show ${kind}`;
+            statusBox.textContent = message;
+            if (sale) {
+                const link = document.createElement('a');
+                link.href = sale.admin_url;
+                link.className = 'button';
+                link.style.marginLeft = '10px';
+                link.textContent = sale.numero;
+                statusBox.appendChild(link);
+            }
+        }
+
+        function clearStatus() {
+            statusBox.className = 'status';
+            statusBox.textContent = '';
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return '';
+        }
+
+        function getCsrfToken() {
+            const input = document.querySelector('[name="csrfmiddlewaretoken"]');
+            return getCookie('csrftoken') || (input ? input.value : '');
+        }
+
+        function payload() {
+            return {
+                canal: getCanal(),
+                cliente_id: clienteSelect.value || null,
+                sesion_caja_id: sesionSelect.value || null,
+                metodo_pago_id: metodoSelect.value || null,
+                referencia: referenciaInput.value,
+                descuento: descuentoInput.value || '0',
+                monto_recibido: montoInput.value || '0',
+                notas: notasInput.value,
+                items: [...cart.values()].map((item) => ({
+                    producto_id: item.product.id,
+                    cantidad: item.quantity,
+                    descuento: item.discount.toFixed(2),
+                })),
+            };
+        }
+
+        async function submitSale(event) {
+            event.preventDefault();
+            clearStatus();
+
+            if (!cart.size) {
+                setStatus('Agrega al menos un producto.', 'error');
+                return;
+            }
+            if (getCanal() === 'mayorista' && !clienteSelect.value) {
+                setStatus('Selecciona un cliente para venta mayorista.', 'error');
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Registrando...';
+
+            try {
+                const soldItems = [...cart.values()].map((item) => ({
+                    product: item.product,
+                    quantity: item.quantity,
+                }));
+                const response = await fetch("{% url 'retail:crear_venta_pos' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: JSON.stringify(payload()),
+                });
+                const body = await response.json();
+                if (!response.ok) {
+                    throw new Error(body.error || 'No se pudo registrar la venta.');
+                }
+
+                soldItems.forEach((item) => {
+                    item.product.stock_actual = Math.max(0, item.product.stock_actual - item.quantity);
+                });
+                cart.clear();
+                descuentoInput.value = '0.00';
+                montoInput.value = '';
+                amountTouched = false;
+                referenciaInput.value = '';
+                notasInput.value = '';
+                renderProducts();
+                renderCart();
+                setStatus(`Venta registrada por ${money(body.venta.total)}.`, 'success', body.venta);
+            } catch (error) {
+                setStatus(error.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Cobrar venta';
+            }
+        }
+
+        productList.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-add]');
+            if (button) {
+                addToCart(button.dataset.add);
+            }
+        });
+
+        cartBody.addEventListener('input', (event) => {
+            const row = event.target.closest('[data-product-id]');
+            if (!row) {
+                return;
+            }
+            const item = cart.get(Number(row.dataset.productId));
+            if (!item) {
+                return;
+            }
+            if (event.target.matches('[data-qty]')) {
+                item.quantity = Math.min(
+                    item.product.stock_actual,
+                    Math.max(1, Number(event.target.value || 1)),
+                );
+            }
+            if (event.target.matches('[data-discount]')) {
+                item.discount = Math.max(0, Number(event.target.value || 0));
+            }
+            renderCart();
+        });
+
+        cartBody.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-remove]');
+            if (button) {
+                cart.delete(Number(button.dataset.remove));
+                renderCart();
+            }
+        });
+
+        document.querySelectorAll('input[name="canal"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+                amountTouched = false;
+                renderProducts();
+                renderCart();
+            });
+        });
+
+        searchInput.addEventListener('input', renderProducts);
+        categoryFilter.addEventListener('change', renderProducts);
+        descuentoInput.addEventListener('input', renderTotals);
+        montoInput.addEventListener('input', () => {
+            amountTouched = true;
+            renderTotals();
+        });
+        metodoSelect.addEventListener('change', () => {
+            const method = metodosPago.find((item) => item.id === Number(metodoSelect.value));
+            if (method && method.tipo !== 'efectivo') {
+                amountTouched = false;
+                montoInput.value = currentTotal.toFixed(2);
+            }
+            renderTotals();
+        });
+        document.getElementById('clear-cart').addEventListener('click', () => {
+            cart.clear();
+            amountTouched = false;
+            renderCart();
+            clearStatus();
+        });
+        document.getElementById('sale-form').addEventListener('submit', submitSale);
+
+        initCategories();
+        renderProducts();
+        renderCart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Acceso denegado</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f6f7f9;
+            color: #1f2937;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        main {
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            padding: 24px;
+        }
+
+        section {
+            width: min(520px, 100%);
+            border: 1px solid #d9dee6;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+
+        p {
+            margin: 0 0 18px;
+            color: #667085;
+        }
+
+        a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0 12px;
+            border-radius: 6px;
+            background: #1f7a5c;
+            color: #ffffff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section>
+            <h1>Acceso denegado</h1>
+            <p>Tu usuario no tiene un rol habilitado para usar el POS.</p>
+            <a href="{% url 'retail:dashboard' %}">Volver al panel</a>
+        </section>
+    </main>
+</body>
+</html>
